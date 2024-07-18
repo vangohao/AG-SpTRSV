@@ -129,44 +129,47 @@ T reduce_sum(T *input, int length)
     return sum;
 }*/
 
-template <typename T>
-int read_tri(char *filename, int *m, int *nnz, 
-        int **csrRowPtr, int **csrColIdx, T **csrVal)
-{
-    FILE *f;
-    if ((f = fopen(filename, "r")) == NULL)
-        return -1;
+// template <typename T>
+// int read_tri(char *filename, int *m, int *nnz, 
+//         int **csrRowPtr, int **csrColIdx, T **csrVal)
+// {
+//     FILE *f;
+//     if ((f = fopen(filename, "r")) == NULL)
+//         return -1;
 
-    fscanf(f, "%d%d\n", m, nnz);
-    *csrRowPtr = (int*)malloc((*m + 1) * sizeof(int));
-    *csrColIdx = (int*)malloc(*nnz * sizeof(int));
-    *csrVal = (T*)malloc(*nnz * sizeof(T));
+//     fscanf(f, "%d%d\n", m, nnz);
+//     *csrRowPtr = (int*)malloc((*m + 1) * sizeof(int));
+//     *csrColIdx = (int*)malloc(*nnz * sizeof(int));
+//     *csrVal = (T*)malloc(*nnz * sizeof(T));
 
-    for (int i = 0; i < *m; i++)
-    {
-        fscanf(f, "%d", *csrRowPtr + i);
-    }
-    (*csrRowPtr)[*m] = *nnz;
-    for (int i = 0; i < *nnz; i++)
-    {
-        fscanf(f, "%d", *csrColIdx + i);
-    }
+//     for (int i = 0; i < *m; i++)
+//     {
+//         fscanf(f, "%d", *csrRowPtr + i);
+//     }
+//     (*csrRowPtr)[*m] = *nnz;
+//     for (int i = 0; i < *nnz; i++)
+//     {
+//         fscanf(f, "%d", *csrColIdx + i);
+//     }
 
-    if (sizeof(T) == sizeof(float))
-    {
-        for (int i = 0; i < *nnz; i++)
-        {
-            fscanf(f, "%f", *csrVal + i);
-        }
-    }
-    else
-    {
-        for (int i = 0; i < *nnz; i++)
-        {
-            fscanf(f, "%lf", *csrVal + i);
-        }
-    }
-}
+//     if (sizeof(T) == sizeof(float))
+//     {
+//         for (int i = 0; i < *nnz; i++)
+//         {
+//             fscanf(f, "%f", *csrVal + i);
+//         }
+//     }
+//     else
+//     {
+//         printf("nnz = %d\n", *nnz);
+//         for (int i = 0; i < *nnz; i++)
+//         {
+//             fscanf(f, "%lf", *csrVal + i);
+//             // printf("i=%d\n", i);
+//         }
+//         printf("finish, nnz=%d\n", *nnz);
+//     }
+// }
 
 __global__
 void spts_syncfree_cuda_analyser(const int   *d_cscRowIdx,

@@ -17,8 +17,8 @@
 // #define REPEAT_TIME 100
 // #define WARM_UP 10
 
-#define REPEAT_TIME 1
-#define WARM_UP 0
+#define REPEAT_TIME 10
+#define WARM_UP 1
 
 #define CU_TEST false
 
@@ -42,7 +42,7 @@ int error_detect(VALUE_TYPE *x, VALUE_TYPE *x_base, int m)
 
 int main(int argc, char* argv[])
 {
-    cudaSetDevice(1);
+    // cudaSetDevice(1);
 
     struct timeval tv_begin, tv_end;
 
@@ -94,7 +94,11 @@ int main(int argc, char* argv[])
     int *csrColIdxL;
     VALUE_TYPE *csrValL;
 
+    printf("Start Read matrix!\n");
+
     read_tri<VALUE_TYPE>(input_name, &m, &nnzL, &csrRowPtrL, &csrColIdxL, &csrValL);
+    
+    printf("Read matrix done!\n");
 
     int layer;
     double parallelism;
@@ -154,16 +158,35 @@ int main(int argc, char* argv[])
     //anaparas paras = anaparas(64, 1, ROW_BLOCK, 1, LEVEL_WISE, ONE_LEVEL, WORKLOAD_BALANCE, RG_SIMPLE);
 
     // cant
-    anaparas paras = anaparas(64, 2, ROW_BLOCK, 1, LEVEL_WISE, ONE_LEVEL, SIMPLE2, RG_SIMPLE);
+    // anaparas paras = anaparas(64, 2, ROW_BLOCK, 1, LEVEL_WISE, ONE_LEVEL, SIMPLE2, RG_SIMPLE);
 
     // delaunay_n23
     //anaparas paras = anaparas(1024, 4, ROW_BLOCK_AVG, 2, LEVEL_WISE, THRESH_LEVEL, SIMPLE, RG_SIMPLE);
 
     // delaunay_n13
-    //anaparas paras = anaparas(64, 4, ROW_BLOCK_AVG, 1, LEVEL_WISE, THRESH_LEVEL, WORKLOAD_BALANCE, RG_SIMPLE);
+    // anaparas paras = anaparas(64, 4, ROW_BLOCK_AVG, 1, LEVEL_WISE, THRESH_LEVEL, WORKLOAD_BALANCE, RG_SIMPLE);
 
     // webbase-1M
     // anaparas paras = anaparas(1024, 1, ROW_BLOCK_THRESH, 32, LEVEL_WISE, ONE_LEVEL, SIMPLE, RG_SIMPLE);
+
+    // my 384**3 d3n4 stencilstar with diag
+    // tbs 1024 sws 4 ps 0 8 0 ss 1 0 1
+    // 前面都按照顺序，最后三个的顺序是反的
+    anaparas paras = anaparas(1024, 4, ROW_BLOCK, 8, LEVEL_WISE, ONE_LEVEL, SIMPLE, RG_BALANCE);
+
+    // my 320**3 d3n14 stencilbox with diag
+    // tbs 1024 sws 4 ps 0 4 0 ss 0 1 1
+    // anaparas paras = anaparas(1024, 4, ROW_BLOCK, 4, LEVEL_WISE, ONE_LEVEL, SIMPLE2, RG_SIMPLE);
+
+    // my 384**3 d3n7 stencilstar width = 2 with diag
+    // tbs 1024 sws 1 ps 1 16 0 ss 0 0 1
+    // anaparas paras = anaparas(1024, 1, ROW_BLOCK_THRESH, 16, LEVEL_WISE, ONE_LEVEL, SIMPLE, RG_SIMPLE);
+
+    // my 384**3 stencilstar width = 1 fill in level =1 with diag
+    // tbs 1024 sws 4 ps 0 8 0 ss 0 0 1
+    // anaparas paras = anaparas(1024, 4, ROW_BLOCK, 8, LEVEL_WISE, ONE_LEVEL, SIMPLE, RG_SIMPLE);
+
+    show_paras(paras);
 
     ptr_anainfo ana = new anainfo(m);
     SpTRSV_preprocessing_new(m, nnzL, csrRowPtrL, csrColIdxL, ana, paras);

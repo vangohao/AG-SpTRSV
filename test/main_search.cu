@@ -38,7 +38,7 @@ int error_detect(VALUE_TYPE *x, VALUE_TYPE *x_base, int m)
 
 int main(int argc, char* argv[])
 {
-    cudaSetDevice(0);
+    // cudaSetDevice(0);
 
     struct timeval tv_begin, tv_end;
     struct timeval prep_begin, prep_end;
