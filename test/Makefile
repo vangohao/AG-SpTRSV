@@ -1,4 +1,4 @@
-CC=nvcc
+CC=/usr/local/cuda-11.8/bin/nvcc
 
 FLAG=-O3 -w -m64 -Xptxas -dlcm=cg -gencode=arch=compute_86,code=sm_86
 
