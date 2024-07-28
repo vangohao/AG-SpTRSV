@@ -250,10 +250,10 @@ int main(int argc, char* argv[])
     #define G (1024 * 1024 * 1024)
     #define M (1024 * 1024)
 
-    float gflops = 1.0 * (2 * nnzL + m) / G;
+    float gflops = 1.0 * (2L * nnzL + m) / G;
     // csrValue + ColIdx + x + b + RowPtr
-    float gmems = 1.0 * (nnzL * (sizeof(int) + sizeof(VALUE_TYPE)) + 
-    2 * m * sizeof(VALUE_TYPE) + m * sizeof(int)) / G;
+    float gmems = 1.0 * (1L * nnzL * (sizeof(int) + sizeof(VALUE_TYPE)) + 
+    2L * m * sizeof(VALUE_TYPE) + 1L * m * sizeof(int)) / G;
 
     if (outcsv_flag)
     {

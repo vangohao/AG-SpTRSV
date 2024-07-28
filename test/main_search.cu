@@ -184,6 +184,11 @@ int main(int argc, char* argv[])
     int flag1 = 0;
     int flag2 = 0;
 
+    #define get_gflops(x) (gflops / (x) * 1e6)
+    #define get_gmems(x) (gmems / (x) * 1e6)
+    float gflops = 1.0 * (2L * nnzL + m) / 1e9;
+    // csrValue + ColIdx + x + b + RowPtr
+
     while (flag1 == 0)
     {
         gettimeofday(&prep_begin, NULL);
@@ -242,7 +247,7 @@ int main(int argc, char* argv[])
 
             get_x_b(m, csrRowPtrL, csrColIdxL, csrValL, x, b_base);
 
-            if (sptrsv_time == -1 || tmp_sptrsv_time < sptrsv_time)
+            if ((sptrsv_time == -1 || tmp_sptrsv_time < sptrsv_time) && get_gflops(tmp_sptrsv_time) < 1e3)
             {
                 best_paras = paras;
                 sptrsv_time = tmp_sptrsv_time;
@@ -271,15 +276,8 @@ int main(int argc, char* argv[])
 
     matrix_level_finalize(ana);
 
-    #define G (1024 * 1024 * 1024)
-    #define M (1024 * 1024)
-    #define get_gflops(x) (gflops / (x) * M)
-    #define get_gmems(x) (gmems / (x) * M)
-
-    float gflops = 1.0 * (2 * nnzL + m) / G;
-    // csrValue + ColIdx + x + b + RowPtr
-    float gmems = 1.0 * (nnzL * (sizeof(int) + sizeof(VALUE_TYPE)) + 
-    2 * m * sizeof(VALUE_TYPE) + m * sizeof(int)) / G;
+    float gmems = 1.0 * (1L * nnzL * (sizeof(int) + sizeof(VALUE_TYPE)) + 
+    2L * m * sizeof(VALUE_TYPE) + 1L * m * sizeof(int)) / 1e9;
 
     if (outcsv_flag)
     {
@@ -301,9 +299,6 @@ int main(int argc, char* argv[])
     printf("Best paras:\n");
     show_paras(best_paras);
     printf("gflops: %.4f Gflops: %.4f \ngmems:  %.4f Bwidth: %.4f\n", gflops, gflops / sptrsv_time * M, gmems, gmems / sptrsv_time * M);
-
-    #undef G
-    #undef M
 
     // Finalize
     cudaFree(csrRowPtr_d);

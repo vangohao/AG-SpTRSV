@@ -1,12 +1,15 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.22)
 
-set(CMAKE_CUDA_COMPILER "/usr/local/cuda-11.8/bin/nvcc")
+if(EXISTS "/workspace")
+    set(CMAKE_CUDA_COMPILER "/usr/local/cuda-11.8/bin/nvcc")
+    set(CUDA_TOOLKIT_ROOT_DIR "/usr/local/cuda-11.8/")
+endif()
+
+set(CMAKE_CUDA_FLAGS "-O3 -w -m64 -Xptxas -dlcm=cg")
 
 project(SpTRSV LANGUAGES CXX CUDA)
 
 find_package(CUDA REQUIRED)
-
-set(CMAKE_CUDA_FLAGS "-O3 -w -m64 -Xptxas -dlcm=cg")
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
@@ -32,5 +35,5 @@ ${SRC_DIR}/search.cu
 set(UTILS_DIR ${PROJECT_SOURCE_DIR}/utils)
 set(UTILS_FILE ${UTILS_DIR}/utils.cpp)
 
-cuda_add_library(SpTRSV ${SRC_FILE})
+add_library(SpTRSV ${SRC_FILE})
 add_library(utils ${UTILS_FILE})
