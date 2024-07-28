@@ -298,7 +298,7 @@ int main(int argc, char* argv[])
     printf("Best run time: %.4f\n", sptrsv_time);
     printf("Best paras:\n");
     show_paras(best_paras);
-    printf("gflops: %.4f Gflops: %.4f \ngmems:  %.4f Bwidth: %.4f\n", gflops, gflops / sptrsv_time * M, gmems, gmems / sptrsv_time * M);
+    printf("gflops: %.4f Gflops: %.4f \ngmems:  %.4f Bwidth: %.4f\n", gflops, gflops / sptrsv_time * 1e6, gmems, gmems / sptrsv_time * 1e6);
 
     // Finalize
     cudaFree(csrRowPtr_d);
