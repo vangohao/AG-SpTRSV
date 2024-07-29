@@ -20,6 +20,9 @@ test_ag_search: main_search.cu
 
 matsolve-agsptrsv: matsolve-agsptrsv.cu
 	$(CUDAC) --std=c++17 $^ $(FLAG) -o $@ -I$(INCLUDE_DIR) -I$(UTILS_DIR) -L$(LIB_DIR) $(LFLAGS)
+	
+matsolve-agsptrsv-search: matsolve-agsptrsv-search.cu
+	$(CUDAC) --std=c++17 $^ $(FLAG) -o $@ -I$(INCLUDE_DIR) -I$(UTILS_DIR) -L$(LIB_DIR) $(LFLAGS) -g
 
 .PHONY:
 

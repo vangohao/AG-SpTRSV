@@ -27,8 +27,10 @@ using namespace uni;
 #define VALUE_TYPE double
 #define VALUE_SIZE 8
 
-#define REPEAT_TIME 11
-#define WARM_UP 1
+#define REPEAT_TIME 1
+#define WARM_UP 0
+
+#define PRINT_LOG true
 
 #define ag_duration(a, b) \
     (1.0 * (b.tv_usec - a.tv_usec + (b.tv_sec - a.tv_sec) * 1.0e6))
@@ -99,12 +101,16 @@ anaparas my_load_paras(Json json) {
 }
 
 void RunBenchmarkLowerWithCusparse(Json json, int Dof, int stencil_type,
-                                   int stencil_width) {
+                                   int stencil_width, std::ofstream &of) {
     constexpr int Dim = 3;
 
     cusp_int M = json["M"].get<cusp_int>();
     cusp_int N = json["N"].get<cusp_int>();
     cusp_int P = json["P"].get<cusp_int>();
+    std::vector<anaparas> except_paras;
+    for (auto j : json["except"]) {
+        except_paras.push_back(my_load_paras(j));
+    }
 
     std::vector<std::array<cusp_int, Dim>> stencil_points;
     if (stencil_type == 0) {
@@ -189,53 +195,6 @@ void RunBenchmarkLowerWithCusparse(Json json, int Dof, int stencil_type,
 
     //--------------------------------------------------------------------------
 
-    /* !!!!!! start computing SpTRSV !!!!!!!! */
-
-    struct timeval tv_begin, tv_end;
-
-    gettimeofday(&tv_begin, NULL);
-
-    PREPROCESSING_STRATEGY ps = ROW_BLOCK;
-    SCHEDULE_STRATEGY strategy = SIMPLE;
-    int rb = 1;
-
-    // int graph_reorder = 0;
-
-    ptr_handler handler;
-
-    // if (graph_reorder) {
-    //     printf("Begin reordering\n");
-
-    //     handler =
-    //         SpTRSV_preprocessing(A_num_rows, A_nnz, hA_csrOffsets.data(),
-    //         hA_columns.data(), ROW_BLOCK, 1);
-
-    //     graph_reorder_with_level(handler);
-
-    //     int permutation[A_num_rows];
-
-    //     matrix_reorder(handler, permutation, hA_csrOffsets.data(),
-    //     hA_columns.data(), hA_values.data());
-
-    //     graph_finalize(handler);
-    // }
-
-    int flag;
-    float sptrsv_time = 0;
-
-    flag = 1;
-
-    anaparas paras = my_load_paras(json["config"]);
-    show_paras(paras);
-
-    ptr_anainfo ana = new anainfo(A_num_rows);
-    SpTRSV_preprocessing_new(A_num_rows, A_nnz, hA_csrOffsets.data(),
-                             hA_columns.data(), ana, paras);
-
-    gettimeofday(&tv_end, NULL);
-
-    printf("Preprocessing time: %.2f us\n", ag_duration(tv_begin, tv_end));
-
     // copy matrix and vector from CPU to GPU memory
     int *csrRowPtr_d, *csrColIdx_d;
     VALUE_TYPE *csrValue_d, *b_d, *x_d;
@@ -253,23 +212,150 @@ void RunBenchmarkLowerWithCusparse(Json json, int Dof, int stencil_type,
                cudaMemcpyHostToDevice);
     cudaMalloc(&x_d, sizeof(VALUE_TYPE) * A_num_rows);
     cudaMemset(x_d, 0, sizeof(VALUE_TYPE) * A_num_rows);
+    /* !!!!!! start computing SpTRSV !!!!!!!! */
 
-    for (int i = 0; i < REPEAT_TIME; i++) {
-        cudaMemset(ana->get_value, 0, sizeof(int) * A_num_rows);
-        cudaMemset(x_d, 0, sizeof(VALUE_TYPE) * A_num_rows);
+    struct timeval tv_begin, tv_end;
+    struct timeval prep_begin, prep_end;
+    float sptrsv_time = -1;
+    float agprep = 0.0, yyprep = 0.0, cuprep = 0.0;
 
-        cudaDeviceSynchronize();
+    gettimeofday(&tv_begin, NULL);
+    printf("Search begin\n");
 
-        gettimeofday(&tv_begin, NULL);
+    anaspace space;
+    anaparas paras;
+    anaparas best_paras;
+    ptr_anainfo ana = new anainfo(A_num_rows);
 
-        SpTRSV_executor_variant(ana, paras, csrRowPtr_d, csrColIdx_d,
-                                csrValue_d, b_d, x_d);
-        cudaDeviceSynchronize();
+    gettimeofday(&prep_begin, NULL);
 
-        gettimeofday(&tv_end, NULL);
+    get_matrix_level(A_num_rows, A_nnz, hA_csrOffsets.data(), hA_columns.data(),
+                     ana);
 
-        if (i >= WARM_UP) sptrsv_time += ag_duration(tv_begin, tv_end);
+    gettimeofday(&prep_end, NULL);
+    agprep += ag_duration(prep_begin, prep_end);
+
+    int flag1 = 0;
+    int flag2 = 0;
+
+    // csrValue + ColIdx + x + b + RowPtr
+
+    while (flag1 == 0) {
+        gettimeofday(&prep_begin, NULL);
+
+        space.get_next_partition(paras);
+
+        get_matrix_partition(A_num_rows, A_nnz, hA_csrOffsets.data(),
+                             hA_columns.data(), ana, paras);
+
+        gettimeofday(&prep_end, NULL);
+        agprep += ag_duration(prep_begin, prep_end);
+
+        while (flag2 == 0) {
+            gettimeofday(&prep_begin, NULL);
+
+            space.get_next_schedule(paras);
+
+#if (PRINT_LOG == true)
+            printf("---------------------------------------\n");
+            show_paras(paras);
+            std::cout << my_dump_paras(paras) << std::endl;
+
+            bool except_flag = false;
+            for (auto ep : except_paras) {
+                if (paras == ep) {
+                    except_flag = true;
+                    break;
+                }
+            }
+            if (except_flag) {
+                printf("Skip\n");
+                flag2 = space.schedule_incr();
+                continue;
+            }
+#endif
+
+            get_matrix_schedule(A_num_rows, A_nnz, hA_csrOffsets.data(),
+                                hA_columns.data(), ana, paras);
+
+            gettimeofday(&prep_end, NULL);
+
+            agprep += ag_duration(prep_begin, prep_end);
+
+            float tmp_sptrsv_time = 0;
+            // memset(x, 0, sizeof(VALUE_TYPE) * A_num_rows);
+
+            for (int i = 0; i < REPEAT_TIME; i++) {
+                cudaMemset(ana->get_value, 0, sizeof(int) * A_num_rows);
+                cudaMemset(x_d, 0, sizeof(VALUE_TYPE) * A_num_rows);
+
+                cudaDeviceSynchronize();
+
+                gettimeofday(&tv_begin, NULL);
+
+                SpTRSV_executor_variant(ana, paras, csrRowPtr_d, csrColIdx_d,
+                                        csrValue_d, b_d, x_d);
+                cudaDeviceSynchronize();
+
+                gettimeofday(&tv_end, NULL);
+
+                if (i >= WARM_UP)
+                    tmp_sptrsv_time += ag_duration(tv_begin, tv_end);
+            }
+
+            // tmp_sptrsv_time /= (REPEAT_TIME - WARM_UP);
+
+#if (PRINT_LOG == true)
+            printf("Solve time: %.2f us\n", tmp_sptrsv_time);
+#endif
+
+            cudaMemcpy(hY.data(), x_d, A_num_rows * sizeof(VALUE_TYPE),
+                       cudaMemcpyDeviceToHost);
+
+            // 添加错误检测
+            int correct = 1;
+            for (cusp_int i = 0; i < A_num_rows; i++) {
+                if (std::abs(hY[i] - hY_result[i]) >
+                    1e-6) {       // direct doubleing point comparison is not
+                    correct = 0;  // reliable
+                    std::cout << "Error! i = " << i << ", hY[i] = " << hY[i]
+                              << ", hY_result[i] = " << hY_result[i]
+                              << std::endl;
+                    break;
+                }
+            }
+
+            if ((sptrsv_time == -1 || tmp_sptrsv_time < sptrsv_time) &&
+                correct) {
+                best_paras = paras;
+                sptrsv_time = tmp_sptrsv_time;
+            }
+
+#if (PRINT_LOG == true)
+            printf("Solve time: %.2f us\n", tmp_sptrsv_time);
+            printf("Current best: ");
+            show_paras(best_paras);
+            std::cout << "\n" << my_dump_paras(best_paras) << std::endl;
+            printf("Best time: %.2f us\n", sptrsv_time);
+            printf("\n");
+#endif
+
+            // if (full_flag)
+            //     print_paras(full_out, input_name, paras, tmp_sptrsv_time);
+
+            schedule_finalize(ana, paras);
+
+            flag2 = space.schedule_incr();
+        }
+
+        partition_finalize(ana);
+
+        flag1 = space.partition_incr();
+        flag2 = 0;
     }
+
+    matrix_level_finalize(ana);
+    delete ana;
 
     sptrsv_time *= 1e-6;
 
@@ -287,6 +373,8 @@ void RunBenchmarkLowerWithCusparse(Json json, int Dof, int stencil_type,
         sptrsv_time, 2L * A_nnz * (REPEAT_TIME - WARM_UP),
         (readBytes + writeBytes) * (REPEAT_TIME - WARM_UP),
         (REPEAT_TIME - WARM_UP)};
+    std::cout << "Best paras:\n" << my_dump_paras(best_paras) << std::endl;
+    of << my_dump_paras(best_paras) << "\n";
     std::cout << "agsptrsv (10 runs) LowerTime(ms): " << sptrsv_time
               << ", Gflops: "
               << (2L * A_nnz * (REPEAT_TIME - WARM_UP) / sptrsv_time) * 1e-9
@@ -304,9 +392,9 @@ void RunBenchmarkLowerWithCusparse(Json json, int Dof, int stencil_type,
         if (hY[i] !=
             hY_result[i]) {  // direct doubleing point comparison is not
             correct = 0;     // reliable
-            // break;
             std::cout << "i = " << i << ", hY[i] = " << hY[i]
                       << ", hY_result[i] = " << hY_result[i] << std::endl;
+            break;
         }
     }
     if (correct)
@@ -330,27 +418,33 @@ int main(int argc, char **argv) {
 
     int i;
     int stencil_width_0;
-    assert(argc > 2);
+    int dof_start, dof_end = MAX_DOF_TEST;
+    assert(argc > 3);
     i = atoi(argv[1]);
     stencil_width_0 = atoi(argv[2]);
+    dof_start = atoi(argv[3]);
+    if (argc > 4) dof_end = atoi(argv[4]);
 
+    // for (int i = 0; i < 1; i++) {
+    // for (int stencil_width_0 = 0; stencil_width_0 < 1; stencil_width_0++) {
     int stencil_width = stencil_width_0 + 1;
     std::string problem = problems[i];
 
-    std::ofstream of;
-    if (if_output) {
-        of.open(std::string{"results/matsolve-agsptrsv-best-"} + problem +
-                "-stencilwidth" + std::to_string(stencil_width) + ".out");
-    } else {
-        of.open("/dev/null");
-    }
-    for (int dof = 0; dof < MAX_DOF_TEST; dof++) {
+    for (int dof = dof_start; dof < dof_end; dof++) {
+        std::ofstream of;
+        if (if_output) {
+            of.open(std::string{"results/matsolve-agsptrsv-searchnew-"} + problem +
+                    "-stencilwidth" + std::to_string(stencil_width) + "-dof" +
+                    std::to_string(dof + 1) + ".out");
+        } else {
+            of.open("/dev/null");
+        }
         of << problem << ", width=" << stencil_width << ", dof=" << dof + 1
            << std::endl;
         RunBenchmarkLowerWithCusparse(
             json[problem + std::to_string(stencil_width)]
                 [std::to_string(dof + 1)],
-            dof + 1, i, stencil_width);
+            dof + 1, i, stencil_width, of);
         of << "Lower:";
         double total_time = benchmark_record_map_lower[dof].total_time;
         double total_flops_time =
@@ -362,7 +456,9 @@ int main(int argc, char **argv) {
 
         of << dof + 1 << "," << total_time << "," << total_flops_time * 1e-9
            << "," << total_bytes_time * 1e-9 << std::endl;
+        of.close();
     }
-    of.close();
+    // }
+    // }
     return 0;
 }

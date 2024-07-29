@@ -3,14 +3,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 #include <vector>
 #include "GPU_setup.h"
 #include "subwarp.h"
-#include <string>
 using namespace std;
 
-enum PREPROCESSING_STRATEGY
-{
+enum PREPROCESSING_STRATEGY {
     ROW_BLOCK,
     ROW_BLOCK_THRESH,
     ROW_BLOCK_AVG,
@@ -20,8 +19,7 @@ enum PREPROCESSING_STRATEGY
     SUPERNODE_BLOCK,
 };
 
-enum SCHEDULE_STRATEGY
-{
+enum SCHEDULE_STRATEGY {
     SIMPLE,
     SIMPLE2,
     WORKLOAD_BALANCE,
@@ -35,40 +33,17 @@ enum SCHEDULE_STRATEGY
     SUBWARP,
 };
 
-enum LEVEL_PART_STRATEGY
-{
-    LEVEL_WISE,
-    ROW_WISE
-};
+enum LEVEL_PART_STRATEGY { LEVEL_WISE, ROW_WISE };
 
-enum LEVEL_SCHED_STRATEGY
-{
-    INDEP_LEVEL,
-    ONE_LEVEL,
-    THRESH_LEVEL
-};
+enum LEVEL_SCHED_STRATEGY { INDEP_LEVEL, ONE_LEVEL, THRESH_LEVEL };
 
-enum ROW_GROUP_SCHED_STRATEGY
-{
-    RG_SIMPLE,
-    RG_BALANCE
-};
+enum ROW_GROUP_SCHED_STRATEGY { RG_SIMPLE, RG_BALANCE };
 
-enum LOCAL_FORMAT
-{
-    CSR,
-    TELL
-};
+enum LOCAL_FORMAT { CSR, TELL };
 
-enum SYNC_ELIM
-{
-    NO_ELIM,
-    NO_WRITE_FENCE,
-    WRITE_FENCE_BLOCK
-};
+enum SYNC_ELIM { NO_ELIM, NO_WRITE_FENCE, WRITE_FENCE_BLOCK };
 
-typedef struct node_info_
-{
+typedef struct node_info_ {
     // node row ID
     int start_row;
     int end_row;
@@ -80,13 +55,13 @@ typedef struct node_info_
     // whether or not to use shared memory
     int using_shared_mem;
 
-    node_info_(int start_row_input, int end_row_input, int using_shared_mem = 1);
+    node_info_(int start_row_input, int end_row_input,
+               int using_shared_mem = 1);
     node_info_();
 
 } node_info;
 
-typedef struct subwarp_info_
-{
+typedef struct subwarp_info_ {
     int start_row[MAX_SUBWARP];
     int end_row[MAX_SUBWARP];
     int subwarp_size;
@@ -97,9 +72,8 @@ typedef struct subwarp_info_
     void clear();
 } subwarp_info;
 
-typedef struct node* ptr_node;
-struct node
-{
+typedef struct node *ptr_node;
+struct node {
     node_info info;
 
     // node id
@@ -134,12 +108,12 @@ struct node
     // locality edge
     ptr_node locality_node;
 
-    node(int nid, int start_row_input, int end_row_input, int nnz_input, int using_shared_mem_input = 1);
+    node(int nid, int start_row_input, int end_row_input, int nnz_input,
+         int using_shared_mem_input = 1);
 };
 
-typedef struct graph* ptr_graph;
-struct graph
-{
+typedef struct graph *ptr_graph;
+struct graph {
     // total number of nodes
     int global_node;
 
@@ -149,15 +123,11 @@ struct graph
     // List all nodes with no parent node
     vector<ptr_node> start_nodes;
 
-    graph() 
-    {
-        global_node = global_edge = 0;
-    }
+    graph() { global_node = global_edge = 0; }
 };
 
-typedef struct SpTRSV_handler* ptr_handler;
-struct SpTRSV_handler
-{
+typedef struct SpTRSV_handler *ptr_handler;
+struct SpTRSV_handler {
     // Number of rows
     int m;
     int nnz;
@@ -176,7 +146,7 @@ struct SpTRSV_handler
     subwarp_info **schedule_subwarp_info;
 
     // Schedule info on device memory
-    // Currently, preprocessing is implemented on CPU, 
+    // Currently, preprocessing is implemented on CPU,
     // considering transferring this stage to GPU in the future
     int *schedule_level_d;
     node_info **schedule_info_d;
@@ -195,11 +165,9 @@ struct SpTRSV_handler
     int subwarp_size;
 
     ~SpTRSV_handler();
-
 };
 
-struct warpinfo
-{
+struct warpinfo {
     int row_st;
     int row_ed;
     // bit-wise information
@@ -210,16 +178,16 @@ struct warpinfo
     int nnz = 0;
 
     warpinfo() { nnz = 0; };
-    void copy(int row_st_in, int row_ed_in, unsigned int info_in, int nnz_in)
-    {
-        row_st = row_st_in; row_ed = row_ed_in; info = info_in;
+    void copy(int row_st_in, int row_ed_in, unsigned int info_in, int nnz_in) {
+        row_st = row_st_in;
+        row_ed = row_ed_in;
+        info = info_in;
         nnz = nnz_in;
     }
 };
 
-typedef struct anainfo* ptr_anainfo;
-struct anainfo
-{
+typedef struct anainfo *ptr_anainfo;
+struct anainfo {
     // level info (on host)
     int partition_levels;
     int *level_partition_map = NULL;
@@ -245,7 +213,7 @@ struct anainfo
     void *winfo_d = NULL;
     void **winfo_d2 = NULL;
     int *winfo_n2 = NULL;
-    //void *winfo_h = NULL;
+    // void *winfo_h = NULL;
     vector<int> winfo_n;
     vector<bool> winfo_multilevel;
 
@@ -266,11 +234,9 @@ struct anainfo
     int *get_value = NULL;
 
     anainfo(int m);
-
 };
 
-struct anaparas
-{
+struct anaparas {
     int tb_size;
     int subwarp_size;
 
@@ -285,16 +251,32 @@ struct anaparas
     ROW_GROUP_SCHED_STRATEGY rg_ss;
 
     anaparas() {};
-    anaparas(int tb_size_in, int subwarp_size_in, PREPROCESSING_STRATEGY row_s_in, int row_alpha_in, LEVEL_PART_STRATEGY level_ps_in, LEVEL_SCHED_STRATEGY level_ss_in,
-    SCHEDULE_STRATEGY schedule_s_in, ROW_GROUP_SCHED_STRATEGY rg_ss_in):
-    tb_size(tb_size_in), subwarp_size(subwarp_size_in), 
-    row_s(row_s_in), row_alpha(row_alpha_in), level_ps(level_ps_in), 
-    level_ss(level_ss_in), schedule_s(schedule_s_in), rg_ss(rg_ss_in) { level_alpha = 1024; };
+    anaparas(int tb_size_in, int subwarp_size_in,
+             PREPROCESSING_STRATEGY row_s_in, int row_alpha_in,
+             LEVEL_PART_STRATEGY level_ps_in, LEVEL_SCHED_STRATEGY level_ss_in,
+             SCHEDULE_STRATEGY schedule_s_in, ROW_GROUP_SCHED_STRATEGY rg_ss_in)
+        : tb_size(tb_size_in),
+          subwarp_size(subwarp_size_in),
+          row_s(row_s_in),
+          row_alpha(row_alpha_in),
+          level_ps(level_ps_in),
+          level_ss(level_ss_in),
+          schedule_s(schedule_s_in),
+          rg_ss(rg_ss_in) {
+        level_alpha = 1024;
+    }
+
+    bool operator==(anaparas &b) const {
+        return (tb_size == b.tb_size && subwarp_size == b.subwarp_size &&
+                row_s == b.row_s && row_alpha == b.row_alpha &&
+                level_ps == b.level_ps && level_ss == b.level_ss &&
+                schedule_s == b.schedule_s && rg_ss == b.rg_ss);
+    }
 };
 
 void show_paras(anaparas paras);
 
-#define ag_max(a, b) (((a) >= (b))? (a): (b))
-#define ag_min(a, b) (((a) < (b))? (a): (b))
+#define ag_max(a, b) (((a) >= (b)) ? (a) : (b))
+#define ag_min(a, b) (((a) < (b)) ? (a) : (b))
 
 #endif

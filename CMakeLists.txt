@@ -5,7 +5,7 @@ if(EXISTS "/workspace")
     set(CUDA_TOOLKIT_ROOT_DIR "/usr/local/cuda-11.8/")
 endif()
 
-set(CMAKE_CUDA_FLAGS "-O3 -w -m64 -Xptxas -dlcm=cg")
+set(CMAKE_CUDA_FLAGS "-O3 -g -w -m64 -Xptxas -dlcm=cg")
 
 project(SpTRSV LANGUAGES CXX CUDA)
 

@@ -7,7 +7,7 @@
 // Some parameters and strategies are eliminated for quicker seach
 struct anaspace
 {
-    vector<int> tbs_list = {1024};   // {64, 256, 1024}
+    vector<int> tbs_list = {64, 256, 1024};
     vector<int> sws_list = {1, 4, 8};
 
     vector<PREPROCESSING_STRATEGY> rp_list = 
