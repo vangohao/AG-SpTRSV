@@ -284,12 +284,12 @@ int matrix_layer2(const int         m,
                  )
 
 {
-    int *layer=(int *)malloc(m*sizeof(int));
+    int *layer=(int *)malloc(sizeof(int)*m);
     if (layer==NULL)
         printf("layer error\n");
     memset (layer, 0, sizeof(int)*m);
 
-    int *layer_num=(int *)malloc((m+1)*sizeof(int));
+    int *layer_num=(int *)malloc(sizeof(int)*(m+1));
     if (layer_num==NULL)
         printf("layer_num error\n");
     memset (layer_num, 0, sizeof(int)*(m+1));

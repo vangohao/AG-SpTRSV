@@ -92,7 +92,11 @@ int main(int argc, char* argv[])
     int *csrColIdxL;
     VALUE_TYPE *csrValL;
 
+    printf("Start Read matrix!\n");
+
     read_tri<VALUE_TYPE>(input_name, &m, &nnzL, &csrRowPtrL, &csrColIdxL, &csrValL);
+
+    printf("Read matrix done!\n");
 
     if (reorder_flag)
     {
@@ -118,14 +122,22 @@ int main(int argc, char* argv[])
     matrix_layer2<VALUE_TYPE>(m, m, nnzL, csrRowPtrL, csrColIdxL, &layer, &parallelism, &max_row_nnz);
 
     // x & randomized b
-    VALUE_TYPE *x, *b;
-    x = (VALUE_TYPE*)malloc(m * sizeof(VALUE_TYPE));
-    b = (VALUE_TYPE*)malloc(m * sizeof(VALUE_TYPE));
-    srand(0);
+    VALUE_TYPE *x, *b, *x_exact;
+    x = (VALUE_TYPE*)malloc(sizeof(VALUE_TYPE) * m);
+    b = (VALUE_TYPE*)malloc(sizeof(VALUE_TYPE) * m);
+    x_exact = (VALUE_TYPE*)malloc(sizeof(VALUE_TYPE) * m);
     for (int i = 0; i < m; i++)
     {
-        b[i] = rand() * 1.0 / RAND_MAX;
+        x_exact[i] = 1.0;
     }
+    get_x_b(m, csrRowPtrL, csrColIdxL, csrValL, x_exact, b);
+    free(x_exact);
+    // srand(0);
+    // for (int i = 0; i < m; i++)
+    // {
+        // b[i] = rand() * 1.0 / RAND_MAX;
+        // b[i] = 1.0;
+    // }
 
     printf("matrix information: location %s\n"
         "m %d nnz %d layer %d parallelism %.2f max_row_nnz %d\n", 
@@ -247,7 +259,23 @@ int main(int argc, char* argv[])
 
             get_x_b(m, csrRowPtrL, csrColIdxL, csrValL, x, b_base);
 
-            if ((sptrsv_time == -1 || tmp_sptrsv_time < sptrsv_time) && get_gflops(tmp_sptrsv_time) < 1e3)
+            // 添加错误检测
+            bool error_flag = false;
+            {
+                int maxi = error_detect(b, b_base, m);
+                VALUE_TYPE error_max = fabs(b[maxi] - b_base[maxi]);
+                if (error_max >= ERROR_THRESH)
+                {
+                    printf("Backward max error at index %d, b = %.8f, b_base = %.8f!\n", maxi, b[maxi], b_base[maxi]);
+                    error_flag = true;
+                }
+                else
+                    printf("AG-SpTRSV correct!\n");
+            }
+
+            if ((sptrsv_time == -1 || tmp_sptrsv_time < sptrsv_time)
+            && get_gflops(tmp_sptrsv_time) < 1e3
+            && !error_flag)
             {
                 best_paras = paras;
                 sptrsv_time = tmp_sptrsv_time;

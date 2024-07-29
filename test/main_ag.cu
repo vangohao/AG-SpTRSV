@@ -34,7 +34,6 @@ int error_detect(VALUE_TYPE *x, VALUE_TYPE *x_base, int m)
         {
             max_error = fabs(x[i] - x_base[i]);
             maxi = i;
-            return maxi;
         }
     }
     return maxi;
@@ -106,14 +105,22 @@ int main(int argc, char* argv[])
     matrix_layer2<VALUE_TYPE>(m, m, nnzL, csrRowPtrL, csrColIdxL, &layer, &parallelism, &max_row_nnz);
 
     // x & randomized b
-    VALUE_TYPE *x, *b;
-    x = (VALUE_TYPE*)malloc(m * sizeof(VALUE_TYPE));
-    b = (VALUE_TYPE*)malloc(m * sizeof(VALUE_TYPE));
-    srand(0);
+    VALUE_TYPE *x, *b, *x_exact;
+    x = (VALUE_TYPE*)malloc(sizeof(VALUE_TYPE) * m);
+    b = (VALUE_TYPE*)malloc(sizeof(VALUE_TYPE) * m);
+    x_exact = (VALUE_TYPE*)malloc(sizeof(VALUE_TYPE) * m);
     for (int i = 0; i < m; i++)
     {
-        b[i] = rand() * 1.0 / RAND_MAX;
+        x_exact[i] = 1.0;
     }
+    get_x_b(m, csrRowPtrL, csrColIdxL, csrValL, x_exact, b);
+    free(x_exact);
+    // srand(0);
+    // for (int i = 0; i < m; i++)
+    // {
+        // b[i] = rand() * 1.0 / RAND_MAX;
+        // b[i] = 1.0;
+    // }
 
     printf("matrix information: location %s\n"
         "m %d nnz %d layer %d parallelism %.2f max_row_nnz %d\n", 
@@ -198,15 +205,15 @@ int main(int argc, char* argv[])
     // copy matrix and vector from CPU to GPU memory
     int *csrRowPtr_d, *csrColIdx_d;
     VALUE_TYPE *csrValue_d, *b_d, *x_d;
-    cudaMalloc(&csrRowPtr_d, (m + 1) * sizeof(int));
-    cudaMemcpy(csrRowPtr_d, csrRowPtrL, (m + 1) * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMalloc(&csrColIdx_d, nnzL * sizeof(int));
-    cudaMemcpy(csrColIdx_d, csrColIdxL, nnzL * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMalloc(&csrValue_d, nnzL * sizeof(VALUE_TYPE));
-    cudaMemcpy(csrValue_d, csrValL, nnzL * sizeof(VALUE_TYPE), cudaMemcpyHostToDevice);
-    cudaMalloc(&b_d, m * sizeof(VALUE_TYPE));
-    cudaMemcpy(b_d, b, m * sizeof(VALUE_TYPE), cudaMemcpyHostToDevice);
-    cudaMalloc(&x_d, m * sizeof(VALUE_TYPE));
+    cudaMalloc(&csrRowPtr_d, sizeof(int) * (m + 1));
+    cudaMemcpy(csrRowPtr_d, csrRowPtrL, sizeof(int) * (m + 1), cudaMemcpyHostToDevice);
+    cudaMalloc(&csrColIdx_d, sizeof(int) * nnzL);
+    cudaMemcpy(csrColIdx_d, csrColIdxL, sizeof(int) * nnzL, cudaMemcpyHostToDevice);
+    cudaMalloc(&csrValue_d, sizeof(VALUE_TYPE) * nnzL);
+    cudaMemcpy(csrValue_d, csrValL, sizeof(VALUE_TYPE) * nnzL, cudaMemcpyHostToDevice);
+    cudaMalloc(&b_d, sizeof(VALUE_TYPE) * m);
+    cudaMemcpy(b_d, b, sizeof(VALUE_TYPE) * m, cudaMemcpyHostToDevice);
+    cudaMalloc(&x_d, sizeof(VALUE_TYPE) * m);
     cudaMemset(x_d, 0, sizeof(VALUE_TYPE) * m);
 
     for (int i = 0; i < REPEAT_TIME; i++)
@@ -228,10 +235,10 @@ int main(int argc, char* argv[])
 
     sptrsv_time /= (REPEAT_TIME - WARM_UP);
 
-    cudaMemcpy(x, x_d, m * sizeof(VALUE_TYPE), cudaMemcpyDeviceToHost);
+    cudaMemcpy(x, x_d, sizeof(VALUE_TYPE) * m, cudaMemcpyDeviceToHost);
 
     VALUE_TYPE *b_base;
-    b_base = (VALUE_TYPE*)malloc(m * sizeof(VALUE_TYPE));
+    b_base = (VALUE_TYPE*)malloc(sizeof(VALUE_TYPE) * m);
 
     get_x_b(m, csrRowPtrL, csrColIdxL, csrValL, x, b_base);
 
@@ -245,7 +252,7 @@ int main(int argc, char* argv[])
         printf("AG-SpTRSV correct!\n");
 
     VALUE_TYPE *x_base;
-    x_base = (VALUE_TYPE*)malloc(m * sizeof(VALUE_TYPE));
+    x_base = (VALUE_TYPE*)malloc(sizeof(VALUE_TYPE) * m);
 
     #define G (1024 * 1024 * 1024)
     #define M (1024 * 1024)

@@ -202,9 +202,9 @@ int read_tri(char *filename, int *m, int *nnz,
         return -1;
 
     fscanf(f, "%d%d\n", m, nnz);
-    *csrRowPtr = (int*)malloc((*m + 1) * sizeof(int));
-    *csrColIdx = (int*)malloc(*nnz * sizeof(int));
-    *csrVal = (T*)malloc(*nnz * sizeof(T));
+    *csrRowPtr = (int*)malloc(sizeof(int) * (*m + 1));
+    *csrColIdx = (int*)malloc(sizeof(int) * *nnz);
+    *csrVal = (T*)malloc(sizeof(T) * *nnz);
 
     for (int i = 0; i < *m; i++)
     {
