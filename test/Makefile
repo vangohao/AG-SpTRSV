@@ -18,6 +18,9 @@ test_ag: main_ag.cu
 test_ag_search: main_search.cu
 	$(CUDAC) $^ $(FLAG) -o $@ -I$(INCLUDE_DIR) -I$(UTILS_DIR) -L$(LIB_DIR) $(LFLAGS)
 
+matsolve-agsptrsv: matsolve-agsptrsv.cu
+	$(CUDAC) --std=c++17 $^ $(FLAG) -o $@ -I$(INCLUDE_DIR) -I$(UTILS_DIR) -L$(LIB_DIR) $(LFLAGS)
+
 .PHONY:
 
 clean:
