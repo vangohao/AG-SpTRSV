@@ -11,6 +11,8 @@ project(SpTRSV LANGUAGES CXX CUDA)
 
 find_package(CUDA REQUIRED)
 
+add_definitions(-DUNI_CUDA_ARCH=${CMAKE_CUDA_ARCHITECTURES})
+
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 set(SRC_DIR ${PROJECT_SOURCE_DIR}/src)

@@ -2,7 +2,7 @@ CUDAC?=/usr/local/cuda-11.8/bin/nvcc
 
 CUDAARCHS?=80
 
-FLAG=-O3 -w -m64 -Xptxas -dlcm=cg -gencode=arch=compute_$(CUDAARCHS),code=sm_$(CUDAARCHS)
+FLAG=-O3 -w -m64 -Xptxas -dlcm=cg -gencode=arch=compute_$(CUDAARCHS),code=sm_$(CUDAARCHS) -DUNI_CUDA_ARCH=$(CUDAARCHS)
 
 LFLAGS=-lSpTRSV -lutils -lcusparse
 

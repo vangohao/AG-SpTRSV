@@ -5,8 +5,13 @@
 
 // Please set SM_NUM as the number of stream-multiprocessors on GPU
 // Due to register constraint, set BLOCK_NUM = SM_NUM on Ampere
-#define SM_NUM 80
-#define BLOCK_NUM 80
+#if UNI_CUDA_ARCH == 80
+#define SM_NUM 108
+#define BLOCK_NUM 108
+#else
+#define SM_NUM 82
+#define BLOCK_NUM 82
+#endif
 
 #define THREAD_NUM_PER_BLOCK 128
 #define ALIGN_THREAD_PER_BLOCK 1024

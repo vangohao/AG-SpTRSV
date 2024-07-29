@@ -216,7 +216,7 @@ int read_tri(char *filename, int *m, int *nnz,
         fscanf(f, "%d", *csrColIdx + i);
     }
 
-    if (sizeof(T) == sizeof(float))
+    if constexpr (std::is_same_v<T, float>)
     {
         for (int i = 0; i < *nnz; i++)
         {
@@ -230,6 +230,7 @@ int read_tri(char *filename, int *m, int *nnz,
             fscanf(f, "%lf", *csrVal + i);
         }
     }
+    return 0;
 }
 
 int write_tri(char *filename, int m, int nnz,
