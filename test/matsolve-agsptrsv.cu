@@ -323,12 +323,12 @@ void RunBenchmarkLowerWithCusparse(Json json, int Dof, int stencil_type,
 
 int main(int argc, char **argv) {
     Json json = LoadJsonFromFile(
-#if UNI_CUDA_ARCH==80
+#if UNI_CUDA_ARCH == 80
         "matsolve-config-a100.json"
 #else
         "matsolve-config.json"
 #endif
-        );
+    );
     std::string problems[] = {"stencilstar", "stencilbox", "stencilstarfill1"};
     bool if_output = json["output"];
 
@@ -343,34 +343,31 @@ int main(int argc, char **argv) {
     int stencil_width = stencil_width_0 + 1;
     std::string problem = problems[i];
 
-    std::ofstream of;
-    if (if_output) {
-        of.open(std::string{"results/matsolve-agsptrsv-best-"} + problem +
-                "-stencilwidth" + std::to_string(stencil_width) + ".out");
-    } else {
-        of.open("/dev/null");
-    }
+    // std::ofstream of;
+    // if (if_output) {
+    //     of.open(std::string{"results/matsolve-agsptrsv-best-"} + problem +
+    //             "-stencilwidth" + std::to_string(stencil_width) + ".out");
+    // } else {
+    //     of.open("/dev/null");
+    // }
 
-    of << problem << ", width=" << stencil_width << ", dof=" << dof + 1
-       << std::endl;
+    std::cout << problem << ", width=" << stencil_width << ", dof=" << dof + 1
+              << std::endl;
 
-    of << "\tmesh size=" << M << 'x' << N << 'x' << P << std::endl;
+    std::cout << "\tmesh size=" << M << 'x' << N << 'x' << P << std::endl;
     RunBenchmarkLowerWithCusparse(json[problem + std::to_string(stencil_width)]
                                       [std::to_string(dof + 1)]["config"],
                                   dof + 1, i, stencil_width, M, N, P);
-    of << "\t\tLower:";
+    std::cout << "\t\tLower:";
     double total_time = benchmark_record_map_lower[dof].total_time;
     double total_flops_time =
         static_cast<double>(benchmark_record_map_lower[dof].flops) / total_time;
     double total_bytes_time =
         static_cast<double>(benchmark_record_map_lower[dof].bytes) / total_time;
 
-    of << dof + 1 << "," << total_time << "," << total_flops_time * 1e-9 << ","
-       << total_bytes_time * 1e-9 << std::endl;
-    std::cout << "\t\tLower:" << dof + 1 << "," << total_time << ","
-              << total_flops_time * 1e-9 << "," << total_bytes_time * 1e-9
-              << std::endl;  // 用于脚本读取
+    std::cout << dof + 1 << "," << total_time << "," << total_flops_time * 1e-9
+              << "," << total_bytes_time * 1e-9 << std::endl;
 
-    of.close();
+    // of.close();
     return 0;
 }

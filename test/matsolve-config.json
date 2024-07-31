@@ -2,48 +2,9 @@
     "output": true,
     "stencilstar1": {
         "1": {
-            "meshes": [
-                [
-                    512,
-                    512,
-                    512
-                ],
-                [
-                    336,
-                    336,
-                    336
-                ],
-                [
-                    256,
-                    256,
-                    256
-                ],
-                [
-                    208,
-                    208,
-                    208
-                ],
-                [
-                    176,
-                    176,
-                    176
-                ],
-                [
-                    160,
-                    160,
-                    160
-                ],
-                [
-                    144,
-                    144,
-                    144
-                ],
-                [
-                    128,
-                    128,
-                    128
-                ]
-            ],
+            "M": 512,
+            "N": 512,
+            "P": 512,
             "config": {
                 "level_ps": 0,
                 "level_ss": 1,
@@ -55,90 +16,25 @@
                 "tb_size": 1024
             }
         },
-        "4": {
-            "meshes": [
-                [
-                    208,
-                    208,
-                    208
-                ],
-                [
-                    176,
-                    176,
-                    176
-                ],
-                [
-                    160,
-                    160,
-                    160
-                ],
-                [
-                    144,
-                    144,
-                    144
-                ],
-                [
-                    128,
-                    128,
-                    128
-                ]
-            ],
+        "2": {
+            "M": 336,
+            "N": 336,
+            "P": 336,
             "config": {
                 "level_ps": 0,
                 "level_ss": 1,
                 "rg_ss": 0,
-                "row_alpha": 4,
+                "row_alpha": 32,
                 "row_s": 2,
                 "schedule_s": 0,
-                "subwarp_size": 4,
+                "subwarp_size": 1,
                 "tb_size": 1024
             }
-        }
-    },
-    "stencilstar2": {
-        "1": {
-            "meshes": [
-                [
-                    432,
-                    432,
-                    432
-                ],
-                [
-                    272,
-                    272,
-                    272
-                ],
-                [
-                    208,
-                    208,
-                    208
-                ],
-                [
-                    160,
-                    160,
-                    160
-                ],
-                [
-                    144,
-                    144,
-                    144
-                ],
-                [
-                    128,
-                    128,
-                    128
-                ],
-                [
-                    112,
-                    112,
-                    112
-                ],
-                [
-                    96,
-                    96,
-                    96
-                ]
-            ],
+        },
+        "3": {
+            "M": 256,
+            "N": 256,
+            "P": 256,
             "config": {
                 "level_ps": 0,
                 "level_ss": 1,
@@ -151,33 +47,39 @@
             }
         },
         "4": {
-            "meshes": [
-                [
-                    160,
-                    160,
-                    160
-                ],
-                [
-                    144,
-                    144,
-                    144
-                ],
-                [
-                    128,
-                    128,
-                    128
-                ],
-                [
-                    112,
-                    112,
-                    112
-                ],
-                [
-                    96,
-                    96,
-                    96
-                ]
-            ],
+            "M": 208,
+            "N": 208,
+            "P": 208,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 0,
+                "row_alpha": 4,
+                "row_s": 2,
+                "schedule_s": 0,
+                "subwarp_size": 4,
+                "tb_size": 1024
+            }
+        },
+        "5": {
+            "M": 176,
+            "N": 176,
+            "P": 176,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 0,
+                "row_alpha": 1,
+                "row_s": 1,
+                "schedule_s": 0,
+                "subwarp_size": 4,
+                "tb_size": 1024
+            }
+        },
+        "6": {
+            "M": 160,
+            "N": 160,
+            "P": 160,
             "config": {
                 "level_ps": 0,
                 "level_ss": 1,
@@ -188,47 +90,43 @@
                 "subwarp_size": 4,
                 "tb_size": 1024
             }
+        },
+        "7": {
+            "M": 144,
+            "N": 144,
+            "P": 144,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 0,
+                "row_alpha": 1,
+                "row_s": 2,
+                "schedule_s": 0,
+                "subwarp_size": 4,
+                "tb_size": 1024
+            }
+        },
+        "8": {
+            "M": 128,
+            "N": 128,
+            "P": 128,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 0,
+                "row_alpha": 1,
+                "row_s": 1,
+                "schedule_s": 0,
+                "subwarp_size": 4,
+                "tb_size": 1024
+            }
         }
     },
-    "stencilbox1": {
+    "stencilstar2": {
         "1": {
-            "meshes": [
-                [
-                    336,
-                    336,
-                    336
-                ],
-                [
-                    208,
-                    208,
-                    208
-                ],
-                [
-                    160,
-                    160,
-                    160
-                ],
-                [
-                    128,
-                    128,
-                    128
-                ],
-                [
-                    112,
-                    112,
-                    112
-                ],
-                [
-                    96,
-                    96,
-                    96
-                ],
-                [
-                    80,
-                    80,
-                    80
-                ]
-            ],
+            "M": 432,
+            "N": 432,
+            "P": 432,
             "config": {
                 "level_ps": 0,
                 "level_ss": 1,
@@ -240,29 +138,174 @@
                 "tb_size": 1024
             }
         },
+        "2": {
+            "M": 272,
+            "N": 272,
+            "P": 272,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 0,
+                "row_alpha": 16,
+                "row_s": 0,
+                "schedule_s": 0,
+                "subwarp_size": 1,
+                "tb_size": 1024
+            }
+        },
+        "3": {
+            "M": 208,
+            "N": 208,
+            "P": 208,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 0,
+                "row_alpha": 1,
+                "row_s": 1,
+                "schedule_s": 0,
+                "subwarp_size": 4,
+                "tb_size": 1024
+            }
+        },
         "4": {
-            "meshes": [
-                [
-                    128,
-                    128,
-                    128
-                ],
-                [
-                    112,
-                    112,
-                    112
-                ],
-                [
-                    96,
-                    96,
-                    96
-                ],
-                [
-                    80,
-                    80,
-                    80
-                ]
-            ],
+            "M": 160,
+            "N": 160,
+            "P": 160,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 0,
+                "row_alpha": 1,
+                "row_s": 2,
+                "schedule_s": 0,
+                "subwarp_size": 4,
+                "tb_size": 1024
+            }
+        },
+        "5": {
+            "M": 144,
+            "N": 144,
+            "P": 144,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 0,
+                "row_alpha": 1,
+                "row_s": 1,
+                "schedule_s": 0,
+                "subwarp_size": 4,
+                "tb_size": 1024
+            }
+        },
+        "6": {
+            "M": 128,
+            "N": 128,
+            "P": 128,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 0,
+                "row_alpha": 1,
+                "row_s": 1,
+                "schedule_s": 0,
+                "subwarp_size": 4,
+                "tb_size": 1024
+            }
+        },
+        "7": {
+            "M": 112,
+            "N": 112,
+            "P": 112,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 0,
+                "row_alpha": 1,
+                "row_s": 2,
+                "schedule_s": 0,
+                "subwarp_size": 4,
+                "tb_size": 1024
+            }
+        },
+        "8": {
+            "M": 96,
+            "N": 96,
+            "P": 96,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 0,
+                "row_alpha": 1,
+                "row_s": 1,
+                "schedule_s": 0,
+                "subwarp_size": 4,
+                "tb_size": 1024
+            }
+        }
+    },
+    "stencilbox1": {
+        "1": {
+            "M": 336,
+            "N": 336,
+            "P": 336,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 0,
+                "row_alpha": 16,
+                "row_s": 0,
+                "schedule_s": 0,
+                "subwarp_size": 1,
+                "tb_size": 1024
+            }
+        },
+        "2": {
+            "M": 208,
+            "N": 208,
+            "P": 208,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 1,
+                "row_alpha": 8,
+                "row_s": 0,
+                "schedule_s": 1,
+                "subwarp_size": 1,
+                "tb_size": 1024
+            }
+        },
+        "3": {
+            "M": 160,
+            "N": 160,
+            "P": 160,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 0,
+                "row_alpha": 1,
+                "row_s": 1,
+                "schedule_s": 0,
+                "subwarp_size": 4,
+                "tb_size": 1024
+            },
+            "except": [
+                {
+                    "level_ps": 0,
+                    "level_ss": 1,
+                    "rg_ss": 0,
+                    "row_alpha": 32,
+                    "row_s": 1,
+                    "schedule_s": 0,
+                    "subwarp_size": 4,
+                    "tb_size": 1024
+                }
+            ]
+        },
+        "4": {
+            "M": 128,
+            "N": 128,
+            "P": 128,
             "config": {
                 "level_ps": 0,
                 "level_ss": 1,
@@ -273,52 +316,73 @@
                 "subwarp_size": 1,
                 "tb_size": 1024
             }
+        },
+        "5": {
+            "M": 112,
+            "N": 112,
+            "P": 112,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 0,
+                "row_alpha": 1,
+                "row_s": 0,
+                "schedule_s": 1,
+                "subwarp_size": 1,
+                "tb_size": 1024
+            }
+        },
+        "6": {
+            "M": 96,
+            "N": 96,
+            "P": 96,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 0,
+                "row_alpha": 4,
+                "row_s": 1,
+                "schedule_s": 2,
+                "subwarp_size": 1,
+                "tb_size": 1024
+            }
+        },
+        "7": {
+            "M": 80,
+            "N": 80,
+            "P": 80,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 1,
+                "row_alpha": 4,
+                "row_s": 1,
+                "schedule_s": 2,
+                "subwarp_size": 1,
+                "tb_size": 1024
+            }
+        },
+        "8": {
+            "M": 80,
+            "N": 80,
+            "P": 80,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 1,
+                "row_alpha": 4,
+                "row_s": 2,
+                "schedule_s": 1,
+                "subwarp_size": 1,
+                "tb_size": 1024
+            }
         }
     },
     "stencilstarfill11": {
         "1": {
-            "meshes": [
-                [
-                    432,
-                    432,
-                    432
-                ],
-                [
-                    272,
-                    272,
-                    272
-                ],
-                [
-                    208,
-                    208,
-                    208
-                ],
-                [
-                    160,
-                    160,
-                    160
-                ],
-                [
-                    144,
-                    144,
-                    144
-                ],
-                [
-                    128,
-                    128,
-                    128
-                ],
-                [
-                    112,
-                    112,
-                    112
-                ],
-                [
-                    96,
-                    96,
-                    96
-                ]
-            ],
+            "M": 432,
+            "N": 432,
+            "P": 432,
             "config": {
                 "level_ps": 0,
                 "level_ss": 1,
@@ -330,34 +394,112 @@
                 "tb_size": 1024
             }
         },
+        "2": {
+            "M": 272,
+            "N": 272,
+            "P": 272,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 0,
+                "row_alpha": 16,
+                "row_s": 0,
+                "schedule_s": 0,
+                "subwarp_size": 1,
+                "tb_size": 1024
+            }
+        },
+        "3": {
+            "M": 208,
+            "N": 208,
+            "P": 208,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 0,
+                "row_alpha": 1,
+                "row_s": 1,
+                "schedule_s": 0,
+                "subwarp_size": 4,
+                "tb_size": 1024
+            },
+            "except": [
+                {
+                    "level_ps": 0,
+                    "level_ss": 1,
+                    "rg_ss": 0,
+                    "row_alpha": 16,
+                    "row_s": 1,
+                    "schedule_s": 0,
+                    "subwarp_size": 4,
+                    "tb_size": 1024
+                }
+            ]
+        },
         "4": {
-            "meshes": [
-                [
-                    160,
-                    160,
-                    160
-                ],
-                [
-                    144,
-                    144,
-                    144
-                ],
-                [
-                    128,
-                    128,
-                    128
-                ],
-                [
-                    112,
-                    112,
-                    112
-                ],
-                [
-                    96,
-                    96,
-                    96
-                ]
-            ],
+            "M": 160,
+            "N": 160,
+            "P": 160,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 0,
+                "row_alpha": 1,
+                "row_s": 1,
+                "schedule_s": 0,
+                "subwarp_size": 4,
+                "tb_size": 1024
+            }
+        },
+        "5": {
+            "M": 144,
+            "N": 144,
+            "P": 144,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 0,
+                "row_alpha": 1,
+                "row_s": 1,
+                "schedule_s": 0,
+                "subwarp_size": 4,
+                "tb_size": 1024
+            }
+        },
+        "6": {
+            "M": 128,
+            "N": 128,
+            "P": 128,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 0,
+                "row_alpha": 1,
+                "row_s": 2,
+                "schedule_s": 0,
+                "subwarp_size": 4,
+                "tb_size": 1024
+            }
+        },
+        "7": {
+            "M": 112,
+            "N": 112,
+            "P": 112,
+            "config": {
+                "level_ps": 0,
+                "level_ss": 1,
+                "rg_ss": 0,
+                "row_alpha": 1,
+                "row_s": 2,
+                "schedule_s": 0,
+                "subwarp_size": 4,
+                "tb_size": 1024
+            }
+        },
+        "8": {
+            "M": 96,
+            "N": 96,
+            "P": 96,
             "config": {
                 "level_ps": 0,
                 "level_ss": 1,

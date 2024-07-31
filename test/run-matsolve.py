@@ -2,20 +2,26 @@ import json
 import re
 import subprocess
 import sys
+import os
 
 int_max = 2147483647
 args = sys.argv
 parsed_data = {}
 run_name = args[1]
 executable_path = "./" + run_name
+bandwidth_test = ""
+if len(args) > 2:
+    bandwidth_test = "-" + args[2]
 
 
 def run_test(arguments):
     global parsed_data
     command = [executable_path] + arguments
     result = subprocess.run(command, capture_output=True, text=True)
+    print(result.stdout)
     stdout = result.stdout.split("\n")
     if result.stderr:
+        print(result.stderr)
         return True
 
     stencils = {0: "stencilstar", 1: "stencilbox", 2: "stencilstarfill1"}
@@ -50,13 +56,50 @@ def generate_test(stencil_type, width, dof):
         k += 16
 
 
-generate_test(0, 0, 1)
-generate_test(0, 1, 1)
-generate_test(1, 0, 1)
-generate_test(2, 0, 1)
-generate_test(0, 0, 4)
-generate_test(0, 1, 4)
-generate_test(1, 0, 4)
-generate_test(2, 0, 4)
-with open("./results/" + run_name + ".json", "w", encoding="utf-8") as fout:
+if bandwidth_test == "":
+    generate_test(0, 0, 1)
+    generate_test(0, 1, 1)
+    generate_test(1, 0, 1)
+    generate_test(2, 0, 1)
+    generate_test(0, 0, 4)
+    generate_test(0, 1, 4)
+    generate_test(1, 0, 4)
+    generate_test(2, 0, 4)
+else:
+    if os.environ.get("CUDAARCHS") == 80:
+        mesh_size = [
+            [560, 416, 320, 256, 224, 192, 176, 160],
+            [544, 336, 256, 208, 176, 160, 144, 128],
+            [416, 256, 192, 160, 144, 128, 112, 104],
+            [544, 336, 256, 208, 176, 160, 144, 128],
+        ]
+    else:
+        mesh_size = [
+            [512, 336, 256, 208, 176, 160, 144, 128],
+            [432, 272, 208, 160, 144, 128, 112, 96],
+            [336, 208, 160, 128, 112, 96, 80, 80],
+            [432, 272, 208, 160, 144, 128, 112, 96],
+        ]
+    dof = list(range(1, 9))
+    problems = [(0, 0), (0, 1), (1, 0), (2, 0)]
+    for i in range(8):
+        for j in range(4):
+            run_test(
+                list(
+                    map(
+                        str,
+                        [
+                            *problems[j],
+                            dof[i],
+                            mesh_size[j][i],
+                            mesh_size[j][i],
+                            mesh_size[j][i],
+                        ],
+                    )
+                )
+            )
+
+with open(
+    "./results/" + run_name + bandwidth_test + ".json", "w", encoding="utf-8"
+) as fout:
     json.dump(parsed_data, fout, indent=4)
