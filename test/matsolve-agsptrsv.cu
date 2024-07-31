@@ -39,6 +39,7 @@ using namespace uni;
         if (status != cudaSuccess) {                                   \
             printf("CUDA API failed at line %d with error: %s (%d)\n", \
                    __LINE__, cudaGetErrorString(status), status);      \
+            assert(0);                                                 \
             while (1);                                                 \
         }                                                              \
     }
@@ -99,12 +100,9 @@ anaparas my_load_paras(Json json) {
 }
 
 void RunBenchmarkLowerWithCusparse(Json json, int Dof, int stencil_type,
-                                   int stencil_width) {
+                                   int stencil_width, cusp_int M, cusp_int N,
+                                   cusp_int P) {
     constexpr int Dim = 3;
-
-    cusp_int M = json["M"].get<cusp_int>();
-    cusp_int N = json["N"].get<cusp_int>();
-    cusp_int P = json["P"].get<cusp_int>();
 
     std::vector<std::array<cusp_int, Dim>> stencil_points;
     if (stencil_type == 0) {
@@ -225,7 +223,7 @@ void RunBenchmarkLowerWithCusparse(Json json, int Dof, int stencil_type,
 
     flag = 1;
 
-    anaparas paras = my_load_paras(json["config"]);
+    anaparas paras = my_load_paras(json);
     show_paras(paras);
 
     ptr_anainfo ana = new anainfo(A_num_rows);
@@ -239,19 +237,19 @@ void RunBenchmarkLowerWithCusparse(Json json, int Dof, int stencil_type,
     // copy matrix and vector from CPU to GPU memory
     int *csrRowPtr_d, *csrColIdx_d;
     VALUE_TYPE *csrValue_d, *b_d, *x_d;
-    cudaMalloc(&csrRowPtr_d, sizeof(int) * (A_num_rows + 1));
+    CHECK_CUDA(cudaMalloc(&csrRowPtr_d, sizeof(int) * (A_num_rows + 1)));
     cudaMemcpy(csrRowPtr_d, hA_csrOffsets.data(),
                sizeof(int) * (A_num_rows + 1), cudaMemcpyHostToDevice);
-    cudaMalloc(&csrColIdx_d, sizeof(int) * A_nnz);
+    CHECK_CUDA(cudaMalloc(&csrColIdx_d, sizeof(int) * A_nnz));
     cudaMemcpy(csrColIdx_d, hA_columns.data(), sizeof(int) * A_nnz,
                cudaMemcpyHostToDevice);
-    cudaMalloc(&csrValue_d, sizeof(VALUE_TYPE) * A_nnz);
+    CHECK_CUDA(cudaMalloc(&csrValue_d, sizeof(VALUE_TYPE) * A_nnz));
     cudaMemcpy(csrValue_d, hA_values.data(), sizeof(VALUE_TYPE) * A_nnz,
                cudaMemcpyHostToDevice);
-    cudaMalloc(&b_d, sizeof(VALUE_TYPE) * A_num_rows);
+    CHECK_CUDA(cudaMalloc(&b_d, sizeof(VALUE_TYPE) * A_num_rows));
     cudaMemcpy(b_d, hX.data(), sizeof(VALUE_TYPE) * A_num_rows,
                cudaMemcpyHostToDevice);
-    cudaMalloc(&x_d, sizeof(VALUE_TYPE) * A_num_rows);
+    CHECK_CUDA(cudaMalloc(&x_d, sizeof(VALUE_TYPE) * A_num_rows));
     cudaMemset(x_d, 0, sizeof(VALUE_TYPE) * A_num_rows);
 
     for (int i = 0; i < REPEAT_TIME; i++) {
@@ -328,11 +326,13 @@ int main(int argc, char **argv) {
     std::string problems[] = {"stencilstar", "stencilbox", "stencilstarfill1"};
     bool if_output = json["output"];
 
-    int i;
-    int stencil_width_0;
-    assert(argc > 2);
-    i = atoi(argv[1]);
-    stencil_width_0 = atoi(argv[2]);
+    assert(argc > 6);
+    int i = atoi(argv[1]);
+    int stencil_width_0 = atoi(argv[2]);
+    int dof = atoi(argv[3]) - 1;
+    cusp_int M = atoi(argv[4]);
+    cusp_int N = atoi(argv[5]);
+    cusp_int P = atoi(argv[6]);
 
     int stencil_width = stencil_width_0 + 1;
     std::string problem = problems[i];
@@ -344,25 +344,27 @@ int main(int argc, char **argv) {
     } else {
         of.open("/dev/null");
     }
-    for (int dof = 0; dof < MAX_DOF_TEST; dof++) {
-        of << problem << ", width=" << stencil_width << ", dof=" << dof + 1
-           << std::endl;
-        RunBenchmarkLowerWithCusparse(
-            json[problem + std::to_string(stencil_width)]
-                [std::to_string(dof + 1)],
-            dof + 1, i, stencil_width);
-        of << "Lower:";
-        double total_time = benchmark_record_map_lower[dof].total_time;
-        double total_flops_time =
-            static_cast<double>(benchmark_record_map_lower[dof].flops) /
-            total_time;
-        double total_bytes_time =
-            static_cast<double>(benchmark_record_map_lower[dof].bytes) /
-            total_time;
 
-        of << dof + 1 << "," << total_time << "," << total_flops_time * 1e-9
-           << "," << total_bytes_time * 1e-9 << std::endl;
-    }
+    of << problem << ", width=" << stencil_width << ", dof=" << dof + 1
+       << std::endl;
+
+    of << "\tmesh size=" << M << 'x' << N << 'x' << P << std::endl;
+    RunBenchmarkLowerWithCusparse(json[problem + std::to_string(stencil_width)]
+                                      [std::to_string(dof + 1)]["config"],
+                                  dof + 1, i, stencil_width, M, N, P);
+    of << "\t\tLower:";
+    double total_time = benchmark_record_map_lower[dof].total_time;
+    double total_flops_time =
+        static_cast<double>(benchmark_record_map_lower[dof].flops) / total_time;
+    double total_bytes_time =
+        static_cast<double>(benchmark_record_map_lower[dof].bytes) / total_time;
+
+    of << dof + 1 << "," << total_time << "," << total_flops_time * 1e-9 << ","
+       << total_bytes_time * 1e-9 << std::endl;
+    std::cout << "\t\tLower:" << dof + 1 << "," << total_time << ","
+              << total_flops_time * 1e-9 << "," << total_bytes_time * 1e-9
+              << std::endl;  // 用于脚本读取
+
     of.close();
     return 0;
 }
