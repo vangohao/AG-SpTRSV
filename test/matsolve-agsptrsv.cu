@@ -324,7 +324,13 @@ void RunBenchmarkLowerWithCusparse(Json json, int Dof, int stencil_type,
 }
 
 int main(int argc, char **argv) {
-    Json json = LoadJsonFromFile("matsolve-csrgen.json");
+    Json json = LoadJsonFromFile(
+#if UNI_CUDA_ARCH==80
+        "matsolve-config-a100.json"
+#else
+        "matsolve-config.json"
+#endif
+        );
     std::string problems[] = {"stencilstar", "stencilbox", "stencilstarfill1"};
     bool if_output = json["output"];
 
