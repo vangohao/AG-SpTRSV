@@ -134,11 +134,25 @@ void RunBenchmarkLowerWithCusparse(Json json, int Dof, int stencil_type,
                 }
             });
         stencil_points.push_back(std::array<cusp_int, Dim>{0, 0, 0});
-    } else {
+    } else if (stencil_type == 2) {
         stencil_points.push_back(std::array<cusp_int, Dim>{0, 0, -1});
         stencil_points.push_back(std::array<cusp_int, Dim>{1, 0, -1});
         stencil_points.push_back(std::array<cusp_int, Dim>{0, 1, -1});
         stencil_points.push_back(std::array<cusp_int, Dim>{0, -1, 0});
+        stencil_points.push_back(std::array<cusp_int, Dim>{1, -1, 0});
+        stencil_points.push_back(std::array<cusp_int, Dim>{-1, 0, 0});
+        stencil_points.push_back(std::array<cusp_int, Dim>{0, 0, 0});
+    } else {
+        stencil_points.push_back(std::array<cusp_int, Dim>{0, 0, -2});
+        stencil_points.push_back(std::array<cusp_int, Dim>{0, -1, -1});
+        stencil_points.push_back(std::array<cusp_int, Dim>{-1, 0, -1});
+        stencil_points.push_back(std::array<cusp_int, Dim>{0, -2, 0});
+        stencil_points.push_back(std::array<cusp_int, Dim>{0, 0, -1});
+        stencil_points.push_back(std::array<cusp_int, Dim>{-1, -1, 0});
+        stencil_points.push_back(std::array<cusp_int, Dim>{1, 0, -1});
+        stencil_points.push_back(std::array<cusp_int, Dim>{0, -1, 0});
+        stencil_points.push_back(std::array<cusp_int, Dim>{-2, 0, 0});
+        stencil_points.push_back(std::array<cusp_int, Dim>{0, 1, -1});
         stencil_points.push_back(std::array<cusp_int, Dim>{1, -1, 0});
         stencil_points.push_back(std::array<cusp_int, Dim>{-1, 0, 0});
         stencil_points.push_back(std::array<cusp_int, Dim>{0, 0, 0});
@@ -413,13 +427,14 @@ void RunBenchmarkLowerWithCusparse(Json json, int Dof, int stencil_type,
 
 int main(int argc, char **argv) {
     Json json = LoadJsonFromFile(
-#if UNI_CUDA_ARCH==80
+#if UNI_CUDA_ARCH == 80
         "matsolve-config-a100.json"
 #else
         "matsolve-config.json"
 #endif
-        );
-    std::string problems[] = {"stencilstar", "stencilbox", "stencilstarfill1"};
+    );
+    std::string problems[] = {"stencilstar", "stencilbox", "stencilstarfill1",
+                              "stencildiamond"};
     bool if_output = json["output"];
 
     int i;
@@ -439,9 +454,9 @@ int main(int argc, char **argv) {
     for (int dof = dof_start; dof < dof_end; dof++) {
         std::ofstream of;
         if (if_output) {
-            of.open(std::string{"results/matsolve-agsptrsv-searchnew-"} + problem +
-                    "-stencilwidth" + std::to_string(stencil_width) + "-dof" +
-                    std::to_string(dof + 1) + ".out");
+            of.open(std::string{"results/matsolve-agsptrsv-searchnew-"} +
+                    problem + "-stencilwidth" + std::to_string(stencil_width) +
+                    "-dof" + std::to_string(dof + 1) + ".out");
         } else {
             of.open("/dev/null");
         }

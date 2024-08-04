@@ -24,7 +24,12 @@ def run_test(arguments):
         print(result.stderr)
         return True
 
-    stencils = {0: "stencilstar", 1: "stencilbox", 2: "stencilstarfill1"}
+    stencils = {
+        0: "stencilstar",
+        1: "stencilbox",
+        2: "stencilstarfill1",
+        3: "stencildiamond",
+    }
     stencil, stencil_width, dof, m, n, p = map(int, arguments)
     problem = stencils[stencil] + ",width=%d" % stencil_width
     dof_str = "dof=%d" % dof
@@ -61,29 +66,33 @@ if bandwidth_test == "":
     generate_test(0, 1, 1)
     generate_test(1, 0, 1)
     generate_test(2, 0, 1)
+    generate_test(3, 1, 1)
     generate_test(0, 0, 4)
     generate_test(0, 1, 4)
     generate_test(1, 0, 4)
     generate_test(2, 0, 4)
+    generate_test(3, 1, 4)
 else:
     if os.environ.get("CUDAARCHS") == 80:
         mesh_size = [
-            [560, 416, 320, 256, 224, 192, 176, 160],
-            [544, 336, 256, 208, 176, 160, 144, 128],
-            [416, 256, 192, 160, 144, 128, 112, 104],
-            [544, 336, 256, 208, 176, 160, 144, 128],
-        ]
+            [560, 416, 320, 256, 224, 192, 176, 160],  # stencilstar,width=0
+            [544, 336, 256, 208, 176, 160, 144, 128],  # stencilstar,width=1
+            [416, 256, 192, 160, 144, 128, 112, 104],  # stencilbox,width=0
+            [544, 336, 256, 208, 176, 160, 144, 128],  # stencilstarfill1,width=0
+            [416, 256, 192, 160, 144, 128, 112, 104],  # stencildiamond,width=1
+        ]  # dof=1~8
     else:
         mesh_size = [
-            [512, 336, 256, 208, 176, 160, 144, 128],
-            [432, 272, 208, 160, 144, 128, 112, 96],
-            [336, 208, 160, 128, 112, 96, 80, 80],
-            [432, 272, 208, 160, 144, 128, 112, 96],
-        ]
+            [512, 336, 256, 208, 176, 160, 144, 128],  # stencilstar,width=0
+            [432, 272, 208, 160, 144, 128, 112, 96],  # stencilstar,width=1
+            [336, 208, 160, 128, 112, 96, 80, 80],  # stencilbox,width=0
+            [432, 272, 208, 160, 144, 128, 112, 96],  # stencilstarfill1,width=0
+            [336, 208, 160, 128, 112, 96, 80, 80],  # stencildiamond,width=1
+        ]  # dof=1~8
     dof = list(range(1, 9))
-    problems = [(0, 0), (0, 1), (1, 0), (2, 0)]
-    for i in range(8):
-        for j in range(4):
+    problems = [(0, 0), (0, 1), (1, 0), (2, 0), (3, 1)]
+    for i in range(len(dof)):
+        for j in range(5):
             run_test(
                 list(
                     map(

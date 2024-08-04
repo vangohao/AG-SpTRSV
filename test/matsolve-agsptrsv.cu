@@ -126,11 +126,25 @@ void RunBenchmarkLowerWithCusparse(Json json, int Dof, int stencil_type,
                 }
             });
         stencil_points.push_back(std::array<cusp_int, Dim>{0, 0, 0});
-    } else {
+    } else if (stencil_type == 2) {
         stencil_points.push_back(std::array<cusp_int, Dim>{0, 0, -1});
         stencil_points.push_back(std::array<cusp_int, Dim>{1, 0, -1});
         stencil_points.push_back(std::array<cusp_int, Dim>{0, 1, -1});
         stencil_points.push_back(std::array<cusp_int, Dim>{0, -1, 0});
+        stencil_points.push_back(std::array<cusp_int, Dim>{1, -1, 0});
+        stencil_points.push_back(std::array<cusp_int, Dim>{-1, 0, 0});
+        stencil_points.push_back(std::array<cusp_int, Dim>{0, 0, 0});
+    } else {
+        stencil_points.push_back(std::array<cusp_int, Dim>{0, 0, -2});
+        stencil_points.push_back(std::array<cusp_int, Dim>{0, -1, -1});
+        stencil_points.push_back(std::array<cusp_int, Dim>{-1, 0, -1});
+        stencil_points.push_back(std::array<cusp_int, Dim>{0, -2, 0});
+        stencil_points.push_back(std::array<cusp_int, Dim>{0, 0, -1});
+        stencil_points.push_back(std::array<cusp_int, Dim>{-1, -1, 0});
+        stencil_points.push_back(std::array<cusp_int, Dim>{1, 0, -1});
+        stencil_points.push_back(std::array<cusp_int, Dim>{0, -1, 0});
+        stencil_points.push_back(std::array<cusp_int, Dim>{-2, 0, 0});
+        stencil_points.push_back(std::array<cusp_int, Dim>{0, 1, -1});
         stencil_points.push_back(std::array<cusp_int, Dim>{1, -1, 0});
         stencil_points.push_back(std::array<cusp_int, Dim>{-1, 0, 0});
         stencil_points.push_back(std::array<cusp_int, Dim>{0, 0, 0});
@@ -302,9 +316,9 @@ void RunBenchmarkLowerWithCusparse(Json json, int Dof, int stencil_type,
         if (hY[i] !=
             hY_result[i]) {  // direct doubleing point comparison is not
             correct = 0;     // reliable
-            // break;
             std::cout << "i = " << i << ", hY[i] = " << hY[i]
                       << ", hY_result[i] = " << hY_result[i] << std::endl;
+            break;
         }
     }
     if (correct)
@@ -329,7 +343,8 @@ int main(int argc, char **argv) {
         "matsolve-config.json"
 #endif
     );
-    std::string problems[] = {"stencilstar", "stencilbox", "stencilstarfill1"};
+    std::string problems[] = {"stencilstar", "stencilbox", "stencilstarfill1",
+                              "stencildiamond"};
     bool if_output = json["output"];
 
     assert(argc > 6);
